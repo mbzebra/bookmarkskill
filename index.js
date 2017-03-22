@@ -1,5 +1,5 @@
 'use strict';
-
+var dbhelper = require('./DynamoDBHelper');
 /**
  * This code is a specific function that handles Mariswaran's BookMark Alexa Skills
  *
@@ -95,42 +95,32 @@ function onLaunch(launchRequest, session, callback) {
 }
 
 /**
- * Sets the card in the session and prepares the speech to reply to the user.
+ * Sets the bookmark in the session and saves it to DB
  */
-function setFavoriteCardInSession(intent, session, callback) {
+function saveBookMarkInDB(intent, session, callback) {
    
-var AWS = require("aws-sdk");
+   var bookmarkpage = dbhelper.get(userid, bookname);
 
-AWS.config.update({region:"us-east-1", access_key_id: "AKIAJEV424V27J6AGEXA", secret_access_key: "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", endpoint: "https://dynamodb.us-east-1.amazonaws.com"});
+    const sessionAttributes = {};
+    const cardTitle = 'BookMark Reminder';
+    const speechOutput = 'BookMark Set For'; + bookmarkpage;
+    // If the user either does not reply to the welcome message or says something that is not
+    // understood, they will be prompted again with this text.
+    const repromptText = 'Do you like Alexa to be your book mark reminder, just say the book name and page number. ';
+    const shouldEndSession = false;
 
-var docClient = new AWS.DynamoDB.DocumentClient();
+    callback(sessionAttributes,
+        buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+       
+}
 
-var table = "BookMarkTable";
 
-var bkmarkid = "A103"
-var bookname = "Wings of Fire";
-var bookmarkpage = 200;
-var userid = "marish";
-
-var params = {
-    TableName:table,
-    Item:{
-        "BkMarkId"     : bkmarkid,
-        "BookName"     : bookname,
-        "BookMarkPage" : bookmarkpage,
-        "userid"       : userid     
-    },
-    
-};
-
-console.log("Adding a new item...");
-docClient.put(params, function(err, data) {
-    if (err) {
-        console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-    } else {
-        console.log("Added item:", JSON.stringify(data, null, 2));
-    }
-});
+/**
+ * Sets the bookmark in the session and saves it to DB
+ */
+function getBookMarkFromDB(intent, session, callback) {
+   
+   
 
        
 }
@@ -151,8 +141,10 @@ function onIntent(intentRequest, session, callback) {
     if (intentName === 'AMAZON.HelpIntent') {
         getWelcomeResponse(callback);
     } else if(intentName === 'SetBookMarkIntent') {
-        setFavoriteCardInSession(intent, session, callback);
-    } else if (intentName === 'AMAZON.StopIntent' || intentName === 'AMAZON.CancelIntent') {
+        saveBookMarkInDB(intent, session, callback);
+    } else if(intentName === 'GetBookMarkIntent') {
+        getBookMarkFromDB(intent, session, callback);
+    }  else if (intentName === 'AMAZON.StopIntent' || intentName === 'AMAZON.CancelIntent') {
         handleSessionEndRequest(callback);
     } else {
         throw new Error('Invalid intent');
