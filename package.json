@@ -1,0 +1,28 @@
+{
+  "name": "alexa-bookmark-skill",
+  "version": "1.0.0",
+  "description": "Alexa Skill to Create and Manage Virtual Bookmarks",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.4.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mbzebra/bookmarkskill.git"
+  },
+  "keywords": [
+    "Alexa",
+    "skill",
+    "bookmark"
+  ],
+  "author": "Mariswaran",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mbzebra/bookmarkskill/issues"
+  },
+  "homepage": "https://github.com/mbzebra/bookmarkskill#readme"
+}
