@@ -1,5 +1,5 @@
 'use strict';
-var dbhelper = require('./DynamoDBHelper');
+var dbhelper = require('./lib/DynamoDBHelper');
 /**
  * This code is a specific function that handles Mariswaran's BookMark Alexa Skills
  *
@@ -99,16 +99,20 @@ function onLaunch(launchRequest, session, callback) {
  */
 function saveBookMarkInDB(intent, session, callback) {
    
-   var bookmarkpage = dbhelper.get(userid, bookname);
+   var userId = "Rambo";
+   var bookname = "Mastering Javascript";
+   var bookmarkpage = "140";
+   dbhelper.get(userId, callback);
 
     const sessionAttributes = {};
     const cardTitle = 'BookMark Reminder';
-    const speechOutput = 'BookMark Set For'; + bookmarkpage;
+    const speechOutput = 'BookMark Set For'; + bookname;
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
     const repromptText = 'Do you like Alexa to be your book mark reminder, just say the book name and page number. ';
     const shouldEndSession = false;
 
+    console.log("Speech Output is:" + speechOutput);
     callback(sessionAttributes,
         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
        
