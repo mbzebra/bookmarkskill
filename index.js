@@ -47,11 +47,11 @@ function buildResponse(sessionAttributes, speechletResponse) {
 
 function getWelcomeResponse(callback) {
     const sessionAttributes = {};
-    const cardTitle = 'BookMark Reminder';
-    const speechOutput = 'Welcome to the BookMark Reminder ';
+    const cardTitle = 'Bookmarker';
+    const speechOutput = 'Welcome to the Bookmarker,  just say the book name and page number. Bookmarker will remember it for you.   ';
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
-    const repromptText = 'Do you like Alexa to be your book mark reminder, just say the book name and page number. ';
+    const repromptText = 'Do you like Alexa to create and remind your bookmark, just say the book name and page number. ';
     const shouldEndSession = false;
 
     callback(sessionAttributes,
@@ -59,20 +59,13 @@ function getWelcomeResponse(callback) {
 }
 
 function handleSessionEndRequest(callback) {
-    const cardTitle = 'Book Mark Reminder';
-    const speechOutput = 'Thank you for trying the BookMark Reminder. Have a nice day!';
+    const cardTitle = 'Bookmarker';
+    const speechOutput = 'Thank you for trying the Bookmarker. Have a nice day!';
     // Setting this to true ends the session and exits the skill.
     const shouldEndSession = true;
 
     callback({}, buildSpeechletResponse(cardTitle, speechOutput, null, shouldEndSession));
 }
-
-function createFavoriteCard(favoriteCard) {
-    return {
-        favoriteCard,
-    };
-}
-
 
 
 // --------------- Events -----------------------
@@ -95,26 +88,67 @@ function onLaunch(launchRequest, session, callback) {
 }
 
 /**
- * Sets the bookmark in the session and saves it to DB
+ * Sets the Bookmark in the session and saves it to DB
  */
 function saveBookMarkInDB(intent, session, callback) {
+   try{
+
+   var bookname = null;
+   var bookmarkpage = null;
+   var speechOutput = null;
+   var userId = session.user.userId;
+   if(typeof intent.slots.BookName != 'undefined' && typeof intent.slots.BookName.value != 'undefined')
+    bookname = intent.slots.BookName.value;
    
-   var userId = "Rambo";
-   var bookname = "Mastering Javascript";
-   var bookmarkpage = "140";
-   dbhelper.get(userId, callback);
+   if(typeof intent.slots.BookmarkPage != 'undefined' && typeof intent.slots.BookmarkPage.value != 'undefined')
+    bookmarkpage = intent.slots.BookmarkPage.value;
+  
+  
+   if(bookmarkpage!=null){
+
+
+    dbhelper.set(userId,bookname,bookmarkpage,callback);
 
     const sessionAttributes = {};
-    const cardTitle = 'BookMark Reminder';
-    const speechOutput = 'BookMark Set For'; + bookname;
+    const cardTitle = 'Bookmarker';
+    
+     if(bookname!=null)
+     speechOutput = 'BookMark Set To ' + bookmarkpage + " For the Book " + bookname;
+     else
+     speechOutput = 'BookMark Set To Page ' + bookmarkpage;
+      
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
     const repromptText = 'Do you like Alexa to be your book mark reminder, just say the book name and page number. ';
-    const shouldEndSession = false;
+    const shouldEndSession = true;
 
     console.log("Speech Output is:" + speechOutput);
     callback(sessionAttributes,
         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+   }
+   else
+   {
+    const sessionAttributes = {};
+    const cardTitle = 'Bookmarker';
+    
+    speechOutput = 'Could not find a matching bookmark at this time';
+      
+    // If the user either does not reply to the welcome message or says something that is not
+    // understood, they will be prompted again with this text.
+    const repromptText = 'To use bookmarker first save bookmark for your book and then just say get bookmark ';
+    const shouldEndSession = true;
+
+    console.log("Speech Output is:" + speechOutput);
+    callback(sessionAttributes,
+    buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+
+
+   }
+}
+catch(err)
+{
+    callback(err);
+}
        
 }
 
@@ -124,8 +158,45 @@ function saveBookMarkInDB(intent, session, callback) {
  */
 function getBookMarkFromDB(intent, session, callback) {
    
-   
+   try{
+    var userId = session.user.userId;
+    var bookname = null;
+    var bookmarkpage = null;
+    var speechOutput = 'Book mark for the book ';
 
+    dbhelper.get(userId, (err,data) => {
+        if(err) {
+                    return context.fail('Error fetching user state: ' + err);
+                }
+    
+    const sessionAttributes = {};
+    const cardTitle = 'Bookmarker';
+     
+     if(typeof data.Item.bookName!= 'undefined' && typeof data.Item.bookmarkPage != 'undefined')
+     {
+          speechOutput = speechOutput + data.Item.bookName + " is " + data.Item.bookmarkPage ;
+     }
+     if(typeof data.Item.bookName == 'undefined' && typeof data.Item.bookmarkPage != 'undefined')
+     {
+         speechOutput = speechOutput + " is " + data.Item.bookmarkPage ;
+     }
+
+    // If the user either does not reply to the welcome message or says something that is not
+    // understood, they will be prompted again with this text.
+    const repromptText = 'Happy Reading.  ';
+    const shouldEndSession = true;
+
+    console.log("Speech Output is:" + speechOutput);
+    callback(sessionAttributes,
+        buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+       
+});
+
+   }
+   catch(err)
+   {
+       callback(err);
+   }
        
 }
 
